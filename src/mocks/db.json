@@ -1,0 +1,146 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "John Doe",
+      "email": "john.doe@example.com",
+      "role": "admin",
+      "status": "active",
+      "lastLogin": "2024-01-15T10:30:00Z",
+      "createdAt": "2023-12-01T09:00:00Z"
+    },
+    {
+      "id": "2",
+      "name": "Jane Smith",
+      "email": "jane.smith@example.com",
+      "role": "user",
+      "status": "active",
+      "lastLogin": "2024-01-14T16:45:00Z",
+      "createdAt": "2023-12-02T11:30:00Z"
+    },
+    {
+      "id": "3",
+      "name": "Bob Johnson",
+      "email": "bob.johnson@example.com",
+      "role": "viewer",
+      "status": "inactive",
+      "lastLogin": "2024-01-10T08:20:00Z",
+      "createdAt": "2023-12-03T14:15:00Z"
+    },
+    {
+      "id": "4",
+      "name": "Alice Brown",
+      "email": "alice.brown@example.com",
+      "role": "user",
+      "status": "active",
+      "lastLogin": "2024-01-15T12:00:00Z",
+      "createdAt": "2023-12-04T16:45:00Z"
+    }
+  ],
+  "beacons": [
+    {
+      "id": "1",
+      "name": "Entrance Beacon",
+      "macAddress": "AA:BB:CC:DD:EE:01",
+      "location": "Main Entrance",
+      "status": "online",
+      "batteryLevel": 85,
+      "lastSeen": "2024-01-15T14:30:00Z",
+      "signalStrength": -65,
+      "firmware": "v2.1.3"
+    },
+    {
+      "id": "2",
+      "name": "Conference Room A",
+      "macAddress": "AA:BB:CC:DD:EE:02",
+      "location": "Conference Room A",
+      "status": "online",
+      "batteryLevel": 72,
+      "lastSeen": "2024-01-15T14:28:00Z",
+      "signalStrength": -58,
+      "firmware": "v2.1.3"
+    },
+    {
+      "id": "3",
+      "name": "Parking Lot Beacon",
+      "macAddress": "AA:BB:CC:DD:EE:03",
+      "location": "Parking Lot Section B",
+      "status": "offline",
+      "batteryLevel": 15,
+      "lastSeen": "2024-01-14T22:15:00Z",
+      "signalStrength": -89,
+      "firmware": "v2.0.8"
+    },
+    {
+      "id": "4",
+      "name": "Cafeteria Beacon",
+      "macAddress": "AA:BB:CC:DD:EE:04",
+      "location": "Employee Cafeteria",
+      "status": "maintenance",
+      "batteryLevel": 45,
+      "lastSeen": "2024-01-15T13:45:00Z",
+      "signalStrength": -70,
+      "firmware": "v2.1.2"
+    },
+    {
+      "id": "5",
+      "name": "Emergency Exit B",
+      "macAddress": "AA:BB:CC:DD:EE:05",
+      "location": "Emergency Exit B",
+      "status": "online",
+      "batteryLevel": 90,
+      "lastSeen": "2024-01-15T14:32:00Z",
+      "signalStrength": -62,
+      "firmware": "v2.1.3"
+    }
+  ],
+  "alerts": [
+    {
+      "id": "1",
+      "title": "Low Battery Warning",
+      "message": "Parking Lot Beacon battery level is critically low (15%)",
+      "severity": "high",
+      "status": "active",
+      "source": "Beacon AA:BB:CC:DD:EE:03",
+      "timestamp": "2024-01-15T12:30:00Z"
+    },
+    {
+      "id": "2",
+      "title": "Beacon Offline",
+      "message": "Parking Lot Beacon has been offline for more than 2 hours",
+      "severity": "critical",
+      "status": "active",
+      "source": "Monitoring System",
+      "timestamp": "2024-01-15T10:15:00Z"
+    },
+    {
+      "id": "3",
+      "title": "Maintenance Required",
+      "message": "Cafeteria Beacon requires scheduled maintenance",
+      "severity": "medium",
+      "status": "acknowledged",
+      "source": "Maintenance System",
+      "timestamp": "2024-01-15T09:00:00Z"
+    },
+    {
+      "id": "4",
+      "title": "Signal Strength Degraded",
+      "message": "Conference Room A beacon signal strength below optimal threshold",
+      "severity": "low",
+      "status": "resolved",
+      "source": "Beacon AA:BB:CC:DD:EE:02",
+      "timestamp": "2024-01-14T16:20:00Z",
+      "resolvedAt": "2024-01-14T18:30:00Z",
+      "resolvedBy": "System Administrator"
+    },
+    {
+      "id": "5",
+      "title": "User Login Anomaly",
+      "message": "Multiple failed login attempts detected for user account",
+      "severity": "medium",
+      "status": "active",
+      "source": "Authentication System",
+      "timestamp": "2024-01-15T11:45:00Z"
+    }
+  ]
+}
