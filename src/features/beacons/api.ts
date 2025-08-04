@@ -1,12 +1,12 @@
 import { Beacon } from './types'
 
 const API_BASE = process.env.NODE_ENV === 'production' 
-  ? 'https://your-api.vercel.app/api' 
+  ? '' // Use relative URLs in production to use the same domain
   : 'http://localhost:3001'
 
 export const beaconsApi = {
   async getBeacons(): Promise<Beacon[]> {
-    const response = await fetch(`${API_BASE}/beacons`)
+    const response = await fetch(`${API_BASE}/api/beacons`)
     if (!response.ok) {
       throw new Error('Failed to fetch beacons')
     }
@@ -14,7 +14,7 @@ export const beaconsApi = {
   },
 
   async createBeacon(beacon: Omit<Beacon, 'id'>): Promise<Beacon> {
-    const response = await fetch(`${API_BASE}/beacons`, {
+    const response = await fetch(`${API_BASE}/api/beacons`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -31,7 +31,7 @@ export const beaconsApi = {
   },
 
   async updateBeacon(id: string, beacon: Partial<Beacon>): Promise<Beacon> {
-    const response = await fetch(`${API_BASE}/beacons/${id}`, {
+    const response = await fetch(`${API_BASE}/api/beacons/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ export const beaconsApi = {
   },
 
   async deleteBeacon(id: string): Promise<void> {
-    const response = await fetch(`${API_BASE}/beacons/${id}`, {
+    const response = await fetch(`${API_BASE}/api/beacons/${id}`, {
       method: 'DELETE',
     })
     if (!response.ok) {

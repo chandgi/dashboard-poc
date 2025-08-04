@@ -3,7 +3,7 @@ import { logger, PerformanceMonitor } from '@/lib/logger'
 import { cacheManager } from '@/lib/scalability'
 
 const API_BASE = process.env.NODE_ENV === 'production' 
-  ? 'https://your-api.vercel.app/api' 
+  ? '' // Use relative URLs in production to use the same domain
   : 'http://localhost:3001'
 
 export const usersApi = {
@@ -17,7 +17,7 @@ export const usersApi = {
         return cached
       }
 
-      const response = await fetch(`${API_BASE}/users`)
+      const response = await fetch(`${API_BASE}/api/users`)
       if (!response.ok) {
         logger.error('Failed to fetch users', new Error(`HTTP ${response.status}`), {
           status: response.status,
@@ -44,7 +44,7 @@ export const usersApi = {
   async createUser(user: Omit<User, 'id' | 'createdAt'>): Promise<User> {
     const monitor = new PerformanceMonitor('create_user')
     try {
-      const response = await fetch(`${API_BASE}/users`, {
+      const response = await fetch(`${API_BASE}/api/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ export const usersApi = {
   },
 
   async updateUser(id: string, user: Partial<User>): Promise<User> {
-    const response = await fetch(`${API_BASE}/users/${id}`, {
+    const response = await fetch(`${API_BASE}/api/users/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ export const usersApi = {
   },
 
   async deleteUser(id: string): Promise<void> {
-    const response = await fetch(`${API_BASE}/users/${id}`, {
+    const response = await fetch(`${API_BASE}/api/users/${id}`, {
       method: 'DELETE',
     })
     if (!response.ok) {

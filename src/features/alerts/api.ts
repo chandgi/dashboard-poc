@@ -1,12 +1,12 @@
 import { Alert } from './types'
 
 const API_BASE = process.env.NODE_ENV === 'production' 
-  ? 'https://your-api.vercel.app/api' 
+  ? '' // Use relative URLs in production to use the same domain
   : 'http://localhost:3001'
 
 export const alertsApi = {
   async getAlerts(): Promise<Alert[]> {
-    const response = await fetch(`${API_BASE}/alerts`)
+    const response = await fetch(`${API_BASE}/api/alerts`)
     if (!response.ok) {
       throw new Error('Failed to fetch alerts')
     }
@@ -14,7 +14,7 @@ export const alertsApi = {
   },
 
   async createAlert(alert: Omit<Alert, 'id' | 'timestamp'>): Promise<Alert> {
-    const response = await fetch(`${API_BASE}/alerts`, {
+    const response = await fetch(`${API_BASE}/api/alerts`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -32,7 +32,7 @@ export const alertsApi = {
   },
 
   async updateAlert(id: string, alert: Partial<Alert>): Promise<Alert> {
-    const response = await fetch(`${API_BASE}/alerts/${id}`, {
+    const response = await fetch(`${API_BASE}/api/alerts/${id}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -46,7 +46,7 @@ export const alertsApi = {
   },
 
   async deleteAlert(id: string): Promise<void> {
-    const response = await fetch(`${API_BASE}/alerts/${id}`, {
+    const response = await fetch(`${API_BASE}/api/alerts/${id}`, {
       method: 'DELETE',
     })
     if (!response.ok) {
