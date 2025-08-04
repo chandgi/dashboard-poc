@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from './logger'
-import { withSecurity, AuthService, AuthorizationService, Permission } from './security'
+import { withSecurity, AuthService, AuthorizationService, Permission, User, UserRole } from './security'
 import { HealthChecker, performanceTracker } from './scalability'
 
 // API Response wrapper for consistent error handling
@@ -122,7 +122,7 @@ export function createApiHandler<T = unknown>(
 // Authentication middleware for API routes
 export function withAuth(requiredPermissions: Permission[] = []) {
   return function <T>(
-    handler: (req: NextRequest & { user: any }) => Promise<T>
+    handler: (req: NextRequest & { user: User }) => Promise<T>
   ) {
     return createApiHandler(async (req: NextRequest) => {
       const authHeader = req.headers.get('authorization')
@@ -132,10 +132,21 @@ export function withAuth(requiredPermissions: Permission[] = []) {
       }
 
       const token = authHeader.substring(7)
-      const user = await AuthService.validateToken(token)
+      const authToken = await AuthService.validateToken(token)
       
-      if (!user) {
+      if (!authToken) {
         throw new ApiError(401, 'INVALID_TOKEN', 'Invalid or expired token')
+      }
+
+      // Convert AuthToken to User
+      const user: User = {
+        id: authToken.sub,
+        email: authToken.email,
+        name: authToken.email, // Use email as name for simplicity
+        tenantId: authToken.tenantId,
+        role: authToken.role,
+        permissions: authToken.permissions,
+        isActive: true
       }
 
       // Check required permissions
@@ -146,7 +157,7 @@ export function withAuth(requiredPermissions: Permission[] = []) {
       }
 
       // Add user to request
-      const authenticatedReq = req as NextRequest & { user: any }
+      const authenticatedReq = req as NextRequest & { user: User }
       authenticatedReq.user = user
 
       return handler(authenticatedReq)
@@ -156,10 +167,10 @@ export function withAuth(requiredPermissions: Permission[] = []) {
 
 // Tenant isolation middleware
 export function withTenantIsolation<T>(
-  handler: (req: NextRequest & { user: any; tenantId: string }) => Promise<T>
+  handler: (req: NextRequest & { user: User; tenantId: string }) => Promise<T>
 ) {
-  return function (req: NextRequest & { user: any }) {
-    return async (req: NextRequest & { user: any }) => {
+  return function (req: NextRequest & { user: User }) {
+    return async (req: NextRequest & { user: User }) => {
       const url = new URL(req.url)
       const pathSegments = url.pathname.split('/')
       const tenantIdIndex = pathSegments.indexOf('tenants') + 1
@@ -175,7 +186,7 @@ export function withTenantIsolation<T>(
         throw new ApiError(403, 'TENANT_ACCESS_DENIED', `Access denied to tenant: ${tenantId}`)
       }
 
-      const tenantReq = req as NextRequest & { user: any; tenantId: string }
+      const tenantReq = req as NextRequest & { user: User; tenantId: string }
       tenantReq.tenantId = tenantId
 
       return handler(tenantReq)

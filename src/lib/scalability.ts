@@ -385,11 +385,12 @@ export const performanceTracker = new PerformanceTracker()
 
 // Utility decorators for caching
 export function cached(ttlSeconds = 300) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (target: Record<string, unknown>, propertyName: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value
 
     descriptor.value = async function (...args: unknown[]) {
-      const cacheKey = `${target.constructor.name}.${propertyName}:${JSON.stringify(args)}`
+      const className = (target.constructor as { name: string }).name
+      const cacheKey = `${className}.${propertyName}:${JSON.stringify(args)}`
       
       return await cacheManager.getOrSet(
         cacheKey,
@@ -415,7 +416,7 @@ export class HealthChecker {
     }
   }
 
-  static async checkCache(): Promise<{ healthy: boolean; responseTime: number; stats: any }> {
+  static async checkCache(): Promise<{ healthy: boolean; responseTime: number; stats: Record<string, unknown> }> {
     const start = performance.now()
     try {
       await cacheManager.set('health_check', 'ok', 60)
@@ -431,15 +432,15 @@ export class HealthChecker {
       logger.error('Cache health check failed', error as Error)
       return { 
         healthy: false, 
-        responseTime: performance.now() - start, 
-        stats: null 
+        responseTime: performance.now() - start,
+        stats: {}
       }
     }
   }
 
   static async getSystemHealth(): Promise<{
     status: 'healthy' | 'degraded' | 'unhealthy'
-    checks: Record<string, any>
+    checks: Record<string, unknown>
     timestamp: string
   }> {
     const checks = {

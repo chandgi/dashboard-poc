@@ -298,46 +298,11 @@ export class ValidationError extends Error {
   }
 }
 
-// Middleware for Next.js API routes
-export function withSecurity(handler: (req: any, res: any) => Promise<void>) {
-  return async (req: any, res: any) => {
-    try {
-      // Rate limiting
-      const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress
-      if (!RateLimiter.checkRateLimit(clientIp)) {
-        return res.status(429).json({ error: 'Too many requests' })
-      }
-
-      // Input validation for POST/PUT/PATCH requests
-      if (['POST', 'PUT', 'PATCH'].includes(req.method) && req.body) {
-        req.body = SecurityValidator.validateApiInput(req.body)
-      }
-
-      // Authentication check
-      const authHeader = req.headers.authorization
-      if (authHeader) {
-        const token = authHeader.replace('Bearer ', '')
-        const authToken = await AuthService.validateToken(token)
-        if (authToken) {
-          req.user = authToken
-        }
-      }
-
-      await handler(req, res)
-    } catch (error) {
-      logger.error('Security middleware error', error as Error)
-      
-      if (error instanceof SecurityError || error instanceof ValidationError) {
-        return res.status(400).json({ error: error.message })
-      }
-      if (error instanceof UnauthorizedError) {
-        return res.status(401).json({ error: error.message })
-      }
-      if (error instanceof ForbiddenError) {
-        return res.status(403).json({ error: error.message })
-      }
-      
-      return res.status(500).json({ error: 'Internal server error' })
-    }
-  }
+// Middleware for Next.js API routes (legacy - for reference only)
+// Note: This is for pages router, use withAuth from api.ts for app router
+export function withSecurity(handler: (req: unknown, res: unknown) => Promise<void>) {
+  return async (req: unknown, res: unknown) => {
+    // Legacy middleware - replaced by withAuth in api.ts
+    return handler(req, res);
+  };
 }
