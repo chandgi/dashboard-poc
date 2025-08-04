@@ -8,4 +8,5 @@ export interface Beacon {
   lastSeen: string
   signalStrength: number
   firmware: string
+  tenantId?: string // Add tenant support for multi-tenancy
 }

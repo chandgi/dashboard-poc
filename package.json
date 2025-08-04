@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently \"npm run dev:next\" \"npm run json-server\"",
+    "dev:next": "next dev",
+    "json-server": "json-server --watch src/mocks/db.json --port 3001",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -18,8 +20,16 @@
     "test:visual": "playwright test visual.spec.ts",
     "test:api": "playwright test api.spec.ts",
     "test:dashboard": "playwright test dashboard.spec.ts",
-    "test:tables": "playwright test alerts.spec.ts beacons.spec.ts users.spec.ts",
-    "test:install": "playwright install"
+    "test:tables": "playwright test alerts.spec.ts beacons.spec.ts users.spec.ts users-firmware.spec.ts",
+    "test:users": "playwright test users.spec.ts users-firmware.spec.ts",
+    "test:security": "playwright test security-performance.spec.ts --grep='Security Tests'",
+    "test:performance": "playwright test security-performance.spec.ts --grep='Performance Tests'",
+    "test:scalability": "playwright test security-performance.spec.ts --grep='Scalability Tests'",
+    "test:install": "playwright install",
+    "docker:build": "docker build -t dashboard-poc .",
+    "docker:run": "docker run -p 3000:3000 dashboard-poc",
+    "docker:dev": "docker-compose up --build",
+    "docker:prod": "docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.6",

@@ -62,7 +62,16 @@ export default function UserTable({ users }: UserTableProps) {
     {
       key: 'lastLogin',
       header: 'Last Login',
-      accessor: (user) => new Date(user.lastLogin).toLocaleDateString(),
+      accessor: (user) => user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never',
+    },
+    {
+      key: 'firmwareVersion',
+      header: 'Firmware Version',
+      accessor: (user) => (
+        <span className="inline-flex px-2 py-1 text-xs font-mono bg-gray-100 text-gray-700 rounded">
+          {user.firmwareVersion || 'N/A'}
+        </span>
+      ),
     },
     {
       key: 'createdAt',

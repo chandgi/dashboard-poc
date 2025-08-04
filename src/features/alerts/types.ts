@@ -3,9 +3,10 @@ export interface Alert {
   title: string
   message: string
   severity: 'low' | 'medium' | 'high' | 'critical'
-  status: 'active' | 'acknowledged' | 'resolved'
+  status: 'active' | 'resolved' | 'acknowledged'
   source: string
   timestamp: string
   resolvedAt?: string
-  resolvedBy?: string
+  assignedTo?: string
+  tenantId?: string // Add tenant support for multi-tenancy
 }
