@@ -15,18 +15,32 @@ function AlertsClient({ tenantId }: AlertsClientProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const data = await alertsApi.getAlerts()
-        setAlerts(data)
-      } catch (error) {
-        console.error('Failed to fetch alerts:', error)
-      } finally {
-        setLoading(false)
-      }
+    let isMounted = true
+
+    const fetchAlerts = () => {
+      alertsApi.getAlerts()
+        .then((data) => {
+          if (isMounted) {
+            setAlerts(data)
+          }
+        })
+        .catch((error) => {
+          if (isMounted) {
+            console.error('Failed to fetch alerts:', error)
+          }
+        })
+        .finally(() => {
+          if (isMounted) {
+            setLoading(false)
+          }
+        })
     }
 
     fetchAlerts()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   if (loading) {

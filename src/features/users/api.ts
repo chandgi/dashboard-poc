@@ -1,6 +1,4 @@
 import { User } from './types'
-import { logger, PerformanceMonitor } from '@/lib/logger'
-import { cacheManager } from '@/lib/scalability'
 
 const API_BASE = process.env.NODE_ENV === 'production' 
   ? '' // Use relative URLs in production to use the same domain
@@ -8,41 +6,21 @@ const API_BASE = process.env.NODE_ENV === 'production'
 
 export const usersApi = {
   async getUsers(): Promise<User[]> {
-    const monitor = new PerformanceMonitor('fetch_users')
     try {
-      // Try cache first
-      const cached = await cacheManager.get<User[]>('users:all')
-      if (cached) {
-        logger.debug('Users loaded from cache')
-        return cached
-      }
-
       const response = await fetch(`${API_BASE}/api/users`)
       if (!response.ok) {
-        logger.error('Failed to fetch users', new Error(`HTTP ${response.status}`), {
-          status: response.status,
-          statusText: response.statusText
-        })
         throw new Error('Failed to fetch users')
       }
       
       const users = await response.json()
-      
-      // Cache for 5 minutes
-      await cacheManager.set('users:all', users, 300)
-      
-      logger.info('Users fetched successfully', { count: users.length })
       return users
     } catch (error) {
-      logger.error('Users API error', error as Error)
+      console.error('Users API error:', error)
       throw error
-    } finally {
-      monitor.end()
     }
   },
 
   async createUser(user: Omit<User, 'id' | 'createdAt'>): Promise<User> {
-    const monitor = new PerformanceMonitor('create_user')
     try {
       const response = await fetch(`${API_BASE}/api/users`, {
         method: 'POST',
@@ -57,25 +35,14 @@ export const usersApi = {
       })
       
       if (!response.ok) {
-        logger.error('Failed to create user', new Error(`HTTP ${response.status}`), {
-          status: response.status,
-          user: { name: user.name, email: user.email }
-        })
         throw new Error('Failed to create user')
       }
       
       const newUser = await response.json()
-      
-      // Invalidate cache
-      await cacheManager.delete('users:all')
-      
-      logger.info('User created successfully', { userId: newUser.id, email: newUser.email })
       return newUser
     } catch (error) {
-      logger.error('Create user API error', error as Error)
+      console.error('Create user API error:', error)
       throw error
-    } finally {
-      monitor.end()
     }
   },
 

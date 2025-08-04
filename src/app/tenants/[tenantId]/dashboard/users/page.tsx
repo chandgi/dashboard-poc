@@ -15,18 +15,32 @@ function UsersClient({ tenantId }: UsersClientProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const data = await usersApi.getUsers()
-        setUsers(data)
-      } catch (error) {
-        console.error('Failed to fetch users:', error)
-      } finally {
-        setLoading(false)
-      }
+    let isMounted = true
+
+    const fetchUsers = () => {
+      usersApi.getUsers()
+        .then((data) => {
+          if (isMounted) {
+            setUsers(data)
+          }
+        })
+        .catch((error) => {
+          if (isMounted) {
+            console.error('Failed to fetch users:', error)
+          }
+        })
+        .finally(() => {
+          if (isMounted) {
+            setLoading(false)
+          }
+        })
     }
 
     fetchUsers()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   if (loading) {

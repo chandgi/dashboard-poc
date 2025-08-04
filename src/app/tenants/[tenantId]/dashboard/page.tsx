@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import Layout from '@/components/Layout'
 import MetricCard from '@/components/MetricCard'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -22,30 +22,102 @@ function DashboardClient({ tenantId }: DashboardClientProps) {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
 
+  // Mock data for testing - remove async API calls temporarily
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [usersData, beaconsData, alertsData] = await Promise.all([
-          usersApi.getUsers(),
-          beaconsApi.getBeacons(),
-          alertsApi.getAlerts(),
-        ])
-        setUsers(usersData)
-        setBeacons(beaconsData)
-        setAlerts(alertsData)
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
+    // Simulate loading delay
+    const timer = setTimeout(() => {
+      setUsers([
+        {
+          id: "1",
+          name: "John Doe",
+          email: "john.doe@example.com",
+          role: "admin",
+          status: "active",
+          lastLogin: "2024-01-15T10:30:00Z",
+          createdAt: "2023-12-01T09:00:00Z",
+          firmwareVersion: "v1.2.5"
+        },
+        {
+          id: "2",
+          name: "Jane Smith",
+          email: "jane.smith@example.com",
+          role: "user",
+          status: "active",
+          lastLogin: "2024-01-14T16:45:00Z",
+          createdAt: "2023-12-02T11:30:00Z",
+          firmwareVersion: "v1.2.3"
+        },
+        {
+          id: "3",
+          name: "Bob Johnson",
+          email: "bob.johnson@example.com",
+          role: "viewer",
+          status: "inactive",
+          lastLogin: "2024-01-10T08:20:00Z",
+          createdAt: "2023-12-03T14:15:00Z",
+          firmwareVersion: "v1.1.9"
+        }
+      ])
+      setBeacons([])
+      setAlerts([])
+      setLoading(false)
+    }, 500)
 
-    fetchData()
+    return () => clearTimeout(timer)
   }, [])
 
   const activeAlerts = alerts.filter(alert => alert.status === 'active')
   const onlineBeacons = beacons.filter(beacon => beacon.status === 'online')
   const activeUsers = users.filter(user => user.status === 'active')
+
+  // Helper functions for firmware metrics
+  const getOutdatedFirmwareCount = (users: User[]) => {
+    const outdatedUsers = users.filter(user => 
+      user.firmwareVersion === 'v1.2.3' || user.firmwareVersion === 'v1.1.9'
+    )
+    
+    return outdatedUsers.length > 0 
+      ? `${outdatedUsers.length} Outdated` 
+      : 'All Up to Date'
+  }
+  
+  const getFirmwareAlertSeverity = (users: User[]) => {
+    // Higher number means more severe issues
+    const criticalCount = users.filter(user => user.firmwareVersion === 'v1.1.9').length
+    const warningCount = users.filter(user => user.firmwareVersion === 'v1.2.3').length
+    
+    // Return percentage value for trend
+    return (criticalCount * 2) + warningCount
+  }
+  
+  const getFirmwareStatusMessage = (users: User[]) => {
+    const criticalCount = users.filter(user => user.firmwareVersion === 'v1.1.9').length
+    const warningCount = users.filter(user => user.firmwareVersion === 'v1.2.3').length
+    
+    if (criticalCount > 0) {
+      return `${criticalCount} critical update${criticalCount > 1 ? 's' : ''} needed`
+    } else if (warningCount > 0) {
+      return `${warningCount} update${warningCount > 1 ? 's' : ''} recommended`
+    } else {
+      return 'All devices up to date'
+    }
+  }
+  
+  const getFirmwareDetailMessage = (users: User[]) => {
+    const criticalCount = users.filter(user => user.firmwareVersion === 'v1.1.9').length
+    const warningCount = users.filter(user => user.firmwareVersion === 'v1.2.3').length
+    const upToDateCount = users.length - (criticalCount + warningCount)
+    
+    if (criticalCount > 0 && warningCount > 0) {
+      return `${criticalCount} critical, ${warningCount} warning`
+    } else if (criticalCount > 0) {
+      return `${criticalCount} critical firmware issues`
+    } else if (warningCount > 0) {
+      return `${warningCount} warning-level firmware issues`
+    } else {
+      return `${upToDateCount}/${users.length} users up to date`
+    }
+  }
 
   if (loading) {
     return (
@@ -102,14 +174,71 @@ function DashboardClient({ tenantId }: DashboardClientProps) {
             secondaryDescription="Engagement exceed targets"
           />
           <MetricCard
-            title="Growth Rate"
-            value="4.5%"
-            trend={{ value: 4.5, label: "Steady performance increase" }}
-            secondaryDescription="Meets growth projections"
+            title="Firmware Status"
+            value={getOutdatedFirmwareCount(users)}
+            trend={{ 
+              value: -getFirmwareAlertSeverity(users), 
+              label: getFirmwareStatusMessage(users) 
+            }}
+            secondaryDescription={getFirmwareDetailMessage(users)}
+            icon={<AlertTriangle className="h-4 w-4" />}
           />
         </div>
 
-        <div className="grid gap-6 md:gap-8 grid-cols-1 xl:grid-cols-2 *:data-[slot=card]:shadow-xs">
+        <div className="grid gap-6 md:gap-8 grid-cols-1 xl:grid-cols-3 *:data-[slot=card]:shadow-xs">
+          <Card className="shadow-xs">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                Outdated Firmware Users
+              </CardTitle>
+              <CardDescription>
+                Users requiring firmware updates (v1.2.3 and v1.1.9)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {users.filter(user => user.firmwareVersion === 'v1.2.3' || user.firmwareVersion === 'v1.1.9').length > 0 ? (
+                users
+                  .filter(user => user.firmwareVersion === 'v1.2.3' || user.firmwareVersion === 'v1.1.9')
+                  .map((user) => (
+                    <div key={user.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/20">
+                      <div className="flex items-center space-x-3">
+                        <div className={`flex-shrink-0 w-2 h-2 rounded-full ${
+                          user.firmwareVersion === 'v1.1.9' ? 'bg-red-500' : 'bg-orange-500'
+                        }`} />
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium leading-none">{user.name}</p>
+                          <p className="text-xs text-muted-foreground">{user.email}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`inline-flex px-2 py-1 text-xs font-mono rounded ${
+                          user.firmwareVersion === 'v1.1.9' 
+                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' 
+                            : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'
+                        }`}>
+                          {user.firmwareVersion}
+                        </span>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {user.firmwareVersion === 'v1.1.9' ? 'Critical' : 'Warning'}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+              ) : (
+                <div className="text-center py-8">
+                  <div className="flex justify-center mb-3">
+                    <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                      <Activity className="h-6 w-6 text-green-600 dark:text-green-400" />
+                    </div>
+                  </div>
+                  <p className="text-sm font-medium text-green-700 dark:text-green-400">All Users Up to Date</p>
+                  <p className="text-xs text-muted-foreground">No firmware updates required</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <Card className="shadow-xs">
             <CardHeader>
               <CardTitle>Recent Alerts</CardTitle>
@@ -200,7 +329,34 @@ interface DashboardPageProps {
   params: Promise<{ tenantId: string }>
 }
 
+function DashboardLoading() {
+  return (
+    <div className="space-y-8">
+      <div>
+        <div className="h-8 bg-muted rounded w-64 mb-2"></div>
+        <div className="h-4 bg-muted rounded w-96"></div>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i}>
+            <CardHeader className="pb-2">
+              <div className="h-4 bg-muted rounded w-24"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-8 bg-muted rounded w-16"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default async function DashboardPage({ params }: DashboardPageProps) {
   const { tenantId } = await params
-  return <DashboardClient tenantId={tenantId} />
+  return (
+    <Suspense fallback={<DashboardLoading />}>
+      <DashboardClient tenantId={tenantId} />
+    </Suspense>
+  )
 }

@@ -15,18 +15,32 @@ function BeaconsClient({ tenantId }: BeaconsClientProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchBeacons = async () => {
-      try {
-        const data = await beaconsApi.getBeacons()
-        setBeacons(data)
-      } catch (error) {
-        console.error('Failed to fetch beacons:', error)
-      } finally {
-        setLoading(false)
-      }
+    let isMounted = true
+
+    const fetchBeacons = () => {
+      beaconsApi.getBeacons()
+        .then((data) => {
+          if (isMounted) {
+            setBeacons(data)
+          }
+        })
+        .catch((error) => {
+          if (isMounted) {
+            console.error('Failed to fetch beacons:', error)
+          }
+        })
+        .finally(() => {
+          if (isMounted) {
+            setLoading(false)
+          }
+        })
     }
 
     fetchBeacons()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   if (loading) {
